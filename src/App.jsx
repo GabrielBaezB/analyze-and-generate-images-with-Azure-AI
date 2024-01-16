@@ -1,5 +1,14 @@
+// app.jsx
 import React, { useState } from "react";
 import { analyzeImage } from "./azure-image-analysis";
+
+const sortTags = (tagsArray) => {
+  return tagsArray.sort((a, b) => b.confidence - a.confidence);
+};
+
+const roundPercentage = (percentage) => {
+  return (percentage * 100).toFixed(2);
+};
 
 function App() {
   const [imageUrl, setImageUrl] = useState("");
@@ -19,6 +28,33 @@ function App() {
     }
   };
 
+  const renderTable = () => {
+    if (!imageAnalysis || !imageAnalysis.tagsResult.values.length) {
+      return null;
+    }
+
+    const sortedTags = sortTags(imageAnalysis.tagsResult.values);
+
+    return (
+      <table>
+        <thead>
+          <tr>
+            <th>Etiqueta</th>
+            <th>Porcentaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedTags.map((tag, index) => (
+            <tr key={index}>
+              <td>{tag.name}</td>
+              <td>{roundPercentage(tag.confidence)}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
   return (
     <div className="App">
       <h1>Analizar imagen</h1>
@@ -35,8 +71,7 @@ function App() {
       {imageAnalysis && (
         <div>
           <h2>Resultados</h2>
-          <p>Etiquetas: {Array.isArray(imageAnalysis.tagsResult.values) ? imageAnalysis.tagsResult.values.join(", ") : 'No hay etiquetas disponibles'}</p>
-
+          {renderTable()}
         </div>
       )}
     </div>
